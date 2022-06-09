@@ -14,7 +14,6 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/edsrzf/mmap-go"
 	"github.com/xuperchain/wagon/disasm"
 	"github.com/xuperchain/wagon/exec/internal/compile"
 	"github.com/xuperchain/wagon/wasm"
@@ -164,10 +163,11 @@ func NewVM(module *wasm.Module, opts ...VMOption) (*VM, error) {
 		}
 		size := uint(module.Memory.Entries[0].Limits.Initial) * wasmPageSize
 		if size != 0 {
-			vm.memory, err = mmap.MapRegion(nil, int(size), mmap.RDWR, mmap.ANON, 0)
-			if err != nil {
-				return nil, err
-			}
+			// TODO @chenfengjin
+			// vm.memory, err = mmap.MapRegion(nil, int(size), mmap.RDWR, mmap.ANON, 0)
+			// if err != nil {
+			// 	return nil, err
+			// }
 		}
 		// vm.memory = make([]byte, uint(module.Memory.Entries[0].Limits.Initial)*wasmPageSize)
 		err = vm.initMemory(module)
@@ -632,10 +632,10 @@ func (vm *VM) Restart() {
 }
 
 func (vm *VM) releaseMemory() {
-	if vm.memory != nil {
-		mem := mmap.MMap(vm.memory)
-		mem.Unmap()
-	}
+	// if vm.memory != nil {
+	// mem := mmap.MMap(vm.memory)
+	// mem.Unmap()
+	// }
 }
 
 // Close frees any resources managed by the VM.

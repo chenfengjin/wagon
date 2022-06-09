@@ -6,12 +6,6 @@
 
 package compile
 
-import (
-	"unsafe"
-
-	mmap "github.com/edsrzf/mmap-go"
-)
-
 const (
 	minAllocSize = 1024 * 8 // 8kb executable pages.
 	// alignment - instruction caching works better on aligned boundaries.
@@ -19,7 +13,7 @@ const (
 )
 
 type mmapBlock struct {
-	mem       mmap.MMap
+	// mem       mmap.MMap
 	consumed  uint32
 	remaining uint32
 }
@@ -32,11 +26,11 @@ type MMapAllocator struct {
 
 // Close frees all pages allocated by the allocator.
 func (a *MMapAllocator) Close() error {
-	for _, block := range a.blocks {
-		if err := block.mem.Unmap(); err != nil {
-			return err
-		}
-	}
+	// for _, block := range a.blocks {
+	// 	if err := block.mem.Unmap(); err != nil {
+	// 		return err
+	// 	}
+	// }
 	return nil
 }
 
@@ -44,33 +38,34 @@ func (a *MMapAllocator) Close() error {
 func (a *MMapAllocator) AllocateExec(asm []byte) (NativeCodeUnit, error) {
 	consumed := uint32(len(asm)+allocationAlignment) & ^uint32(allocationAlignment)
 	if a.last != nil && a.last.remaining > consumed {
-		copy(a.last.mem[a.last.consumed:], asm)
-		out := asmBlock{
-			mem: unsafe.Pointer(&a.last.mem[a.last.consumed]),
-		}
-		a.last.remaining -= consumed
-		a.last.consumed += consumed
-		return &out, nil
+		// copy(a.last.mem[a.last.consumed:], asm)
+		// out := asmBlock{
+		// 	// mem: unsafe.Pointer(&a.last.mem[a.last.consumed]),
+		// }
+		// a.last.remaining -= consumed
+		// a.last.consumed += consumed
+		// return &out, nil
+		return nil, nil
 	}
 
 	alloc := minAllocSize
 	if int(consumed) > alloc { // not big enough? make minAlloc + aligned len
 		alloc += int(consumed)
 	}
-	m, err := mmap.MapRegion(nil, alloc, mmap.EXEC|mmap.RDWR, mmap.ANON, int64(0))
-	if err != nil {
-		return nil, err
-	}
+	// m, err := mmap.MapRegion(nil, alloc, mmap.EXEC|mmap.RDWR, mmap.ANON, int64(0))
+	// if err != nil {
+	// 	return nil, err
+	// }
 	a.last = &mmapBlock{
-		mem:       m,
+		// mem:       m,
 		consumed:  consumed,
 		remaining: uint32(alloc) - consumed,
 	}
 	a.blocks = append(a.blocks, a.last)
-	copy(m, asm)
+	// copy(m, asm)
 
 	out := asmBlock{
-		mem: unsafe.Pointer(&m[0]),
+		// mem: unsafe.Pointer(&m[0]),
 	}
 	return &out, nil
 }
